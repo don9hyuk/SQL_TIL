@@ -115,5 +115,30 @@ SELECT column1 FROM t1 WHERE EXISTS (SELECT * FROM t2);
 
 -`NOT EXISTS`가 또 다른 `NOT EXISTS` 내에 포함되어 있으며  중첩된 `NOT EXISTS`는 "모든 y에 대해 x가 TRUE인가?"라는 질문에 답한다
 
-## 15.2.15.10 EXISTS or NOT EXIS
+## 15.2.15.10 서브쿼리 에러
+
+- 지원되지 않는 명령문 사용
+```sql
+SELECT * FROM t1 WHERE s1 IN (SELECT s2 FROM t2 ORDER BY s1 LIMIT 1)
+```
+
+- 서브쿼리 칼럼(열) 수의 오류
+```sql
+SELECT (SELECT column1, column2 FROM t2) FROM t1;
+```
+
+- 서브쿼리 행의 수의 오류
+```sql
+SELECT * FROM t1 WHERE column1 = (SELECT column1 FROM t2);
+```
+서브쿼리가 최대 하나의 행을 반환해야 하지만 두 개 이상이 나오는 경우 쿼리를 재작성해야함
+
+- 서브쿼리에서 테이블 사용의 오류
+```sql
+UPDATE t1 SET column2 = (SELECT MAX(column1) FROM t1);
+```
+공통 테이블 표현식이나 파생 테이블 사용으로 해결
+
+## 문제 풀이 - 많이 주문한 테이블 찾기
+
 
