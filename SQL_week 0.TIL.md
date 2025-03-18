@@ -140,5 +140,12 @@ UPDATE t1 SET column2 = (SELECT MAX(column1) FROM t1);
 공통 테이블 표현식이나 파생 테이블 사용으로 해결
 
 ## 문제 풀이 - 많이 주문한 테이블 찾기
+```sql
+SELECT *
+FROM tips
+WHERE total_bill > (SELECT AVG(total_bill) FROM tips);
+```
+테이블 전체의 평균 식사 금액 계산 후 평균보다 높은 경우 출력
 
+![.](don9hyuk/SQL_TIL/image/KakaoTalk_20250318_152014163.png)
 
