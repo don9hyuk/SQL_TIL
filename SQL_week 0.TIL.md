@@ -220,8 +220,50 @@ SELECT t.*
 FROM tips t
 JOIN weekday_sales ws ON t.day = ws.day;
 ```
-![.](image/KakaoTalk_20250318_154346980.png)
-
 요일별 매출액 합계를 구한 후 매출이 1500 달러 이상인 요일의 결제 내역을 출력
 
+![.](image/KakaoTalk_20250318_154346980.png)
 
+## 문제 풀이 - 식품분류별 가장 비싼 식품의 정보 조회하기
+
+**1. 서브쿼리를 이용한 풀이**
+```sql
+SELECT category, price, product_name
+FROM FOOD_PRODUCT
+WHERE (category, price) IN (
+    SELECT category, MAX(price) AS price
+    FROM FOOD_PRODUCT
+    GROUP BY category
+    HAVING category IN ('과자','국','김치','식용유'))
+ORDER BY price DESC;
+```
+
+- 과자, 국 등 특정 카테고리만 골라낸 후 같은 카테고리에서 최대 가격을 가진 제품만 출력, 가격이 높은 순으로 정렬
+
+![.](image/subsub.png)
+
+
+**2. CTE / WITH를 이용한 풀이**
+```sql
+WITH max_price AS (
+    SELECT CATEGORY, MAX(PRICE) AS MAX_PRICE
+    FROM FOOD_PRODUCT
+    WHERE CATEGORY IN ('과자', '국', '김치', '식용유')
+    GROUP BY CATEGORY
+)
+SELECT f.CATEGORY, m.MAX_PRICE, f.PRODUCT_NAME
+FROM FOOD_PRODUCT f
+JOIN max_price m ON f.CATEGORY = m.CATEGORY AND f.PRICE = m.MAX_PRICE
+ORDER BY m.MAX_PRICE DESC;
+```
+
+- CTE (max price)를 생성하고 메인 테이블에서 FOOD_PRODUCT와 JOIN
+- 가격이 CTE에서 구한 MAX_PRICE와 같은 제품만 선택 후 가격이 높은 순으로 정렬
+
+![.](image/with.png) 
+
+**두 방식 비교**
+
+- 서브쿼리를 활용한 풀이는 간단한 쿼리에 적합하지만 카테고리별 MAX(PRICE)를 찾을 때마다 서브쿼리가 실행된다는 비효율적인 단점이 존재
+
+- `WITH`를 활용했을 때는 MAX(PRICE)를 한 번만 계산 후 재사용할 수 있으며 가독성이 좋아 효율적이라는 특징이 존재, 따라서 데이터가 많아질 경우 CTE를 활용하는 것이 더 좋아보임
