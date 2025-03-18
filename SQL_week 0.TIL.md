@@ -139,6 +139,64 @@ UPDATE t1 SET column2 = (SELECT MAX(column1) FROM t1);
 ```
 공통 테이블 표현식이나 파생 테이블 사용으로 해결
 
+## CTE - WITH
+**CTE (공통 테이블 표현식)은 단일 명령문에서 일시적인 결과 집합을 생성하고 이를 동일한 쿼리 내에서 여러 번 참조가 가능하게 함**
+
+- CTE를 지정하려면 하위 절이 하나 이상 있는 `WITH`절을 사용
+
+- 각 하위절(subclause)은 서브쿼리를 포함하며 이 서브쿼리는 결과 집합을 생성하고 별칭을 지음
+
+**예시**
+```sql
+WITH
+  cte1 AS (SELECT a, b FROM table1),
+  cte2 AS (SELECT c, d FROM table2)
+SELECT b, d FROM cte1 JOIN cte2
+WHERE cte1.a = cte2.c;
+```
+- WITH 절을 사용하여 CTE를 정의하며 다른 CTE에서 기존 CTE를 참조 가능하고, 선택적인 문법 요소이며, DML 문에서도 활용 가능함
+
+**CTE의 칼럼 이름 결정**
+
+- CTE 이름 뒤에 괄호로 묶인 이름 목록이 있는 경우 그것이 칼럼 이름
+```sql
+WITH cte (col1, col2) AS
+(
+  SELECT 1, 2
+  UNION ALL
+  SELECT 3, 4
+)
+SELECT col1, col2 FROM cte;
+```
+- 목록에 있는 이름의 수는 결과 집합에 있는 열의 수와 같아야 하며 그렇지 않은 경우 열 이름은 SELECT 부분의 첫 번째 선택 목록에서 가져옴
+```sql
+WITH cte AS
+(
+  SELECT 1 AS col1, 2 AS col2
+  UNION ALL
+  SELECT 3, 4
+)
+SELECT col1, col2 FROM cte;
+```
+
+**`WITH`가 허용되는 경우**
+
+-서브 쿼리나 `SELECT`, `UPDATE`, 및 `DELETE` 문장의 시작 부분
+```sql
+WITH ... SELECT ...
+WITH ... UPDATE ...
+WITH ... DELETE ...
+```
+```sql
+SELECT ... WHERE id IN (WITH ... SELECT ...) ...
+SELECT * FROM (WITH ... SELECT ...) AS dt ...
+```
+- `WITH`는 동일한 수준에서는 하나 의 절만 허용되지만 서로 다른 수준에서 발생하는 경우 여러 개의 절을 포함
+```sql
+WITH cte1 AS (SELECT 1)
+SELECT * FROM (WITH cte2 AS (SELECT 2) SELECT * FROM cte2 JOIN cte1) AS dt;
+```
+
 ## 문제 풀이 - 많이 주문한 테이블 찾기
 ```sql
 SELECT *
@@ -147,5 +205,23 @@ WHERE total_bill > (SELECT AVG(total_bill) FROM tips);
 ```
 테이블 전체의 평균 식사 금액 계산 후 평균보다 높은 경우 출력
 
-![.](don9hyuk/SQL_TIL/image/KakaoTalk_20250318_152014163.png)
+![.](image/KakaoTalk_20250318_152014163.png)
+
+## 문제 풀이 - 레스토랑의 대목
+```sql
+WITH weekday_sales AS (
+    SELECT day, SUM(total_bill) AS total_sales
+    FROM tips
+    GROUP BY day
+    HAVING SUM(total_bill) >= 1500
+)
+
+SELECT t.*
+FROM tips t
+JOIN weekday_sales ws ON t.day = ws.day;
+```
+![.](image/KakaoTalk_20250318_154346980.png)
+
+요일별 매출액 합계를 구한 후 매출이 1500 달러 이상인 요일의 결제 내역을 출력
+
 
