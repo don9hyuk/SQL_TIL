@@ -169,5 +169,77 @@ SELECT student_name, AVG(test_score)
 # 문제 풀이
 
 ##  Rank Scores
+```sql
+SELECT 
+    score, 
+    DENSE_RANK() OVER (ORDER BY score DESC) AS `rank`
+FROM Scores
+ORDER BY score DESC;
+```
 
+`DENSE_RANK() OVER (ORDER BY score DESC)`
 
+점수를 내림차순(DESC)으로 정렬하여 랭킹을 매김
+
+동점(tie)인 경우 같은 랭킹을 부여하며 다음 순위는 연속적으로 증가
+
+그 후 내림차순으로 정렬
+
+![.](image/leetcode1.png) 
+
+##  다음날도 서울숲의 미세먼지 농도는 나쁨
+```sql
+WITH t1 AS(SELECT
+  measured_at as today,
+  lead(measured_at, 1) over (
+    order by
+      measured_at
+  ) as next_day,
+  pm10,
+  lead(pm10, 1) over (
+    order by
+      measured_at
+  ) as next_pm10
+FROM
+  measurements
+)
+
+SELECT today, next_day, pm10, next_pm10
+FROM t1
+WHERE pm10 < next_pm10
+```
+`LEAD`를 사용하여 각 날짜에 대해 다음날의 날짜와 다음날의 미세먼지 농도를 구함
+
+`WHERE`절에서 다음날 미세먼지 농도가 더 높은 경우만 선택하여 출력
+
+![.](image/seulsoopp.png)
+
+##  다음날도 서울숲의 미세먼지 농도는 나쁨
+```sql
+SELECT B.MEMBER_NAME, A.REVIEW_TEXT, DATE_FORMAT(A.REVIEW_DATE, "%Y-%m-%d") AS REVIEW_DATE
+FROM REST_REVIEW A
+JOIN (
+    SELECT DENSE_RANK() OVER (ORDER BY COUNT(M.MEMBER_ID) DESC) AS RANKING, M.MEMBER_ID, M.MEMBER_NAME
+    FROM MEMBER_PROFILE M
+    JOIN REST_REVIEW R
+    ON M.MEMBER_ID = R.MEMBER_ID
+    GROUP BY M.MEMBER_ID
+    ORDER BY RANKING, REVIEW_DATE, R.REVIEW_TEXT
+) B
+ON A.MEMBER_ID = B.MEMBER_ID
+WHERE B.RANKING = 1
+ORDER BY REVIEW_DATE, A.REVIEW_TEXT
+```
+
+`DENSE_RANK` 윈도우 함수로 각 회원별로 작성한 리뷰 수를 계산하고 리뷰 수가 많은 회원에게 높은 순위를 부여
+
+`ORDER BY COUNT(M.MEMBER_ID) DESC` 회원별로 작성한 리뷰의 개수를 기준으로 내림차순 정렬 후 리뷰 수가 많은 회원부터 순위를 부여
+
+`GROUP BY M.MEMBER_ID`를 사용하여 각 회원별로 그룹화한 후, 해당 회원이 작성한 리뷰 수를 `COUNT(M.MEMBER_ID)`로 계산
+
+메인 쿼리에서 메인 쿼리는 REST_REVIEW 테이블(A)과 서브쿼리에서 반환된 결과(B)를 `MEMBER_ID` 기준으로 조인하고
+`WHERE B.RANKING = 1` 조건으로로 가장 많은 리뷰를 작성한 회원의 리뷰만 선택
+
+`DATE_FORMAT(A.REVIEW_DATE, "%Y-%m-%d") AS REVIEW_DATE`로 REVIEW_DATE를 YYYY-MM-DD 형식으로 출력, 그 후 오름차순 정렬
+
+![.](image/reviewwww.png)
