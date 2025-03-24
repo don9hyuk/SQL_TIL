@@ -214,7 +214,7 @@ WHERE pm10 < next_pm10
 
 ![.](image/seulsoopp.png)
 
-##  다음날도 서울숲의 미세먼지 농도는 나쁨
+##  그룹별 조건에 맞는 식당 목록 출력하기
 ```sql
 SELECT B.MEMBER_NAME, A.REVIEW_TEXT, DATE_FORMAT(A.REVIEW_DATE, "%Y-%m-%d") AS REVIEW_DATE
 FROM REST_REVIEW A
