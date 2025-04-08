@@ -1,4 +1,4 @@
-# SQL Advanced 2주차 과제
+# SQL Advanced 3주차 과제
 
 ## CASE문 & 논리 연산자 활용
 
