@@ -1,4 +1,4 @@
-# SQL Advanced 5주차 과제
+# SQL Advanced 6주차 과제
 
 ## 문제(1) - 복수 국적 메달 수상한 선수 찾기
 ```sql
